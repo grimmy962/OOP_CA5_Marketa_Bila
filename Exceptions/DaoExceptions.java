@@ -5,7 +5,7 @@ package Exceptions;
 
     public class DaoExceptions extends SQLException
     {
-        public DaoExceptions()
+        public DaoExceptions(String s, Exception e)
         {
             // not used
         }
