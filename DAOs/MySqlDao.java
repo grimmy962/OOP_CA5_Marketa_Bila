@@ -3,10 +3,8 @@ package DAOs;
 import DTOs.Countries;
 import Exceptions.DaoExceptions;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
+
 public class MySqlDao {
     private static final String DRIVER = "com.mysql.cj.jdbc.Driver";
     private static final String URL = "jdbc:mysql://localhost:3306/Countries";
@@ -14,60 +12,78 @@ public class MySqlDao {
     private static final String PASSWORD = "";
 
     public Connection getConnection() throws DaoExceptions {
-        Connection connection = null;
-
         try {
             Class.forName(DRIVER);
-            connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+            return DriverManager.getConnection(URL, USERNAME, PASSWORD);
         } catch (ClassNotFoundException | SQLException e) {
             throw new DaoExceptions("Failed to establish a database connection", e);
         }
-
-        return connection;
     }
 
     public void freeConnection(Connection connection) throws DaoExceptions {
         try {
-            if (connection != null) {
+            if (connection != null && !connection.isClosed()) {
                 connection.close();
             }
         } catch (SQLException e) {
             throw new DaoExceptions("Failed to free database connection", e);
-        } finally {
-            // Ensure the connection is closed even if an exception occurs
-            try {
-                if (connection != null && !connection.isClosed()) {
-                    connection.close();
-                }
-            } catch (SQLException e) {
-                // Log or handle the exception as needed
-                throw new DaoExceptions("Failed to close database connection", e);
-            }
         }
     }
 
-    public Countries getCountriesById (int id) throws SQLException{
-        Connection connection = getConnection();
-        PreparedStatement statement = connection.prepareStatement("SELECT * FROM countries where id = ?");
-        ResultSet resultSet = statement.executeQuery();
-        statement.setInt(1, id); // Set the value of the parameter in the prepared statement
+    //feature 2
+    public Countries getCountryById(int id) throws SQLException {
         Countries country = null;
 
-        if(resultSet.next()){
-            country = new Countries();
-            country.setId(resultSet.getInt("ID"));
-            country.setName(resultSet.getString("Name"));
-            country.setCapital(resultSet.getString("Capital"));
-            country.setPopulation(resultSet.getInt("Population"));
-            country.setReligion(resultSet.getString("Religion"));
-            country.setArea(resultSet.getDouble("Area"));
+        try (Connection connection = getConnection();
+             PreparedStatement statement = connection.prepareStatement("SELECT * FROM countries WHERE id = ?")) {
+
+            statement.setInt(1, id); // Set the value of the parameter in the prepared statement
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    country = new Countries(
+                            resultSet.getInt("ID"),
+                            resultSet.getString("Name"),
+                            resultSet.getString("Capital"),
+                            resultSet.getInt("Population"),
+                            resultSet.getString("Religion"),
+                            resultSet.getDouble("Area")
+                    );
+                }
+            }
         }
 
-        resultSet.close();
-        statement.close();
-        connection.close();
-
         return country;
+    }
+
+    //feature 4
+    public void insertCountry(Countries country) throws DaoExceptions {
+        try (Connection connection = getConnection();
+             PreparedStatement statement = connection.prepareStatement(
+                     "INSERT INTO countries (Name, Capital, Population, Religion, Area) VALUES (?, ?, ?, ?, ?)",
+                     Statement.RETURN_GENERATED_KEYS)) {
+
+            statement.setString(1, country.getName());
+            statement.setString(2, country.getCapital());
+            statement.setInt(3, country.getPopulation());
+            statement.setString(4, country.getReligion());
+            statement.setDouble(5, country.getArea());
+
+            int affectedRows = statement.executeUpdate();
+
+            if (affectedRows == 0) {
+                throw new DaoExceptions("Failed to insert country, no rows affected.");
+            }
+
+            try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    country.setId(generatedKeys.getInt(1));
+                } else {
+                    throw new DaoExceptions("Failed to insert country, no ID obtained.");
+                }
+            }
+        } catch (SQLException e) {
+            throw new DaoExceptions("Failed to insert country", e);
+        }
     }
 }
 
