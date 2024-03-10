@@ -1,3 +1,5 @@
+package DTOs;
+
 public class User {
     private int id;
     private String firstName;
@@ -58,7 +60,7 @@ public class User {
 
     @Override
     public String toString() {
-        return "User{" +
+        return "DTOs.User{" +
                 "id=" + id +
                 ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +

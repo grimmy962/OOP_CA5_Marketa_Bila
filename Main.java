@@ -1,3 +1,4 @@
+
 import java.sql.*;
 public class Main {
     public static void main(String[] args) {
@@ -7,7 +8,7 @@ public class Main {
 
     public void start() throws SQLException {
         String url = "jdbc:mysql://localhost/";
-        String dbName = "Countries";
+        String dbName = "DTOs.Countries";
         String userName = "root";
         String password = "";
 

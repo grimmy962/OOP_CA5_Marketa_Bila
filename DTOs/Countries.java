@@ -1,3 +1,5 @@
+package DTOs;
+
 public class Countries {
     int id;
     String name;
@@ -68,7 +70,7 @@ public class Countries {
 
     @Override
     public String toString() {
-        return "Countries{" +
+        return "DTOs.Countries{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", capital='" + capital + '\'' +
