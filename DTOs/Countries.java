@@ -1,5 +1,7 @@
+/**
+ * Main author: Marketa Bila
+ */
 package DTOs;
-
 public class Countries {
     int id;
     String name;

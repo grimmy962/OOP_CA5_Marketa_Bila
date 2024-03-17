@@ -1,5 +1,9 @@
 package DTOs;
 
+/**
+ * Main author: Marketa Bila
+ */
+
 public class User {
     private int id;
     private String firstName;

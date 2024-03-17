@@ -1,6 +1,6 @@
 package Exceptions;
 
-//copied from derek's data access layer sample
+//copied from dermot's data access layer sample
     import java.sql.SQLException;
 
     public class DaoExceptions extends SQLException
